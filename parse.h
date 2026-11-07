@@ -1,8 +1,8 @@
+#ifndef PARSE
+#define PARSE
 #include <string>
 #include <iostream>
 #include <fstream>
-#include <map>
-#include <cstring>
 #include <vector>
 using namespace std;
 
@@ -16,3 +16,4 @@ struct node
 };
 void extract_variable(string line, string &lhs, string &in1, string &in2, string &op);
 vector<struct node> ssa(string filename, bool write);
+#endif

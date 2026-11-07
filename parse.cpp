@@ -1,4 +1,6 @@
 #include "parse.h"
+#include <map>
+
 using namespace std;
 
 // remove leading or trailing white spaces
