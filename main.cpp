@@ -23,11 +23,14 @@ int main(int argc, char *argv[])
     //     cout << unit << " ";
     // }
     // cout << endl;
+    cout << "node information: " << endl;
     for (const auto &node : dag)
     {
         std::cout << "Operation: " << node.op << ", output: " << node.out << "\n";
     }
+    cout << endl;
 
+    cout << "adjacency matrix for DAG:" << endl;
     vector<vector<int>> adj_mat = adj_matrix(dag);
     for (const auto &node : adj_mat)
     {
@@ -37,6 +40,7 @@ int main(int argc, char *argv[])
         }
         cout << endl;
     }
+    cout << endl;
 
     int cycles;
     cout << "ASAP: " << endl;
@@ -90,6 +94,7 @@ int main(int argc, char *argv[])
     {
         cout << "register input: " << dag[r.in].out << " , output: " << dag[r.out].out << " , enabled at time " << r.enable_time << endl;
     }
+    cout << endl;
 
     cout << "ASAP mux list" << endl;
     vector<vector<struct mux>> mux_list = multiplexers(adj_mat, asap);
@@ -105,6 +110,31 @@ int main(int argc, char *argv[])
             }
         }
     }
+    cout << endl;
 
+    cout << "sequencer FSM" << endl;
+    int asap_cycle = total_cycle(asap);
+    vector<int> active_reg;
+    vector<map<int, int>> active_mux;
+    for (int i = 0; i <= asap_cycle; i++)
+    {
+        cout << "cycle: " << i << endl;
+        sequencer(i, mux_list, reg_list, active_reg, active_mux);
+        for (size_t j = 0; j < active_reg.size(); j++)
+        {
+            cout << "register " << active_reg[j] << " enabled for input " << reg_list[active_reg[j]].in << " and output " << reg_list[active_reg[j]].out << endl;
+        }
+
+        for (int k = 0; k < 3; k++)
+        {
+            cout << "resource " << ops[k] << endl;
+            for (const auto &pair : active_mux[k])
+            {
+                cout << "mux " << pair.first << " is used with input " << dag[pair.second].out << " selected" << endl;
+            }
+        }
+        active_reg.clear();
+        active_mux.clear();
+    }
     return 0;
 }

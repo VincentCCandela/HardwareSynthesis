@@ -129,7 +129,7 @@ vector<struct node> ssa(string filename, bool write, vector<int> &resource)
 
         else if (extract_constraint(line, resource) == 0)
         {
-            cout << "added resource limit" << endl;
+            // cout << "added resource limit" << endl;
         }
     }
 

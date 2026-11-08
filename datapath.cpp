@@ -122,17 +122,17 @@ void sequencer(int cycle, vector<vector<struct mux>> mux_list, vector<struct reg
         }
     }
 
-    // active mux stores mux index and select pair
+    // active mux stores mux index and selected input pair
     for (int i = 0; i < 3; i++)
     {
         map<int, int> m;
         for (int j = 0; j < mux_list[i].size(); j++)
         {
-            for (int node = 0; node < mux_list[i][j].in.size(); node++)
+            for (const auto &pair : mux_list[i][j].in)
             {
-                if (mux_list[i][j].in.at(node) == cycle)
+                if (pair.second == cycle)
                 {
-                    m.emplace(j, node);
+                    m.emplace(j, pair.first);
                 }
             }
         }
