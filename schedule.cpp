@@ -221,7 +221,7 @@ vector<int> get_top(map<int, int> slack, int k, set<int> &ready_nodes)
 }
 
 // constraint is a map with pairs (operation resource, available unit)
-map<int, int> ConstrainedASAP(vector<vector<int>> adj_mat, map<int, int> constraint, int &total_cycle, map<int, int> asap, map<int, int> alap)
+map<int, int> ConstrainedASAP(vector<vector<int>> adj_mat, vector<int> constraint, int &total_cycle, map<int, int> asap, map<int, int> alap)
 {
     map<int, int> schedule; // maps node index to cycle
     int cycle = 0;          // current cycle
@@ -307,7 +307,7 @@ map<int, int> ConstrainedASAP(vector<vector<int>> adj_mat, map<int, int> constra
     return schedule;
 }
 
-map<int, int> ConstrainedALAP(vector<vector<int>> adj_mat, map<int, int> constraint, int &total_cycle, map<int, int> asap, map<int, int> alap)
+map<int, int> ConstrainedALAP(vector<vector<int>> adj_mat, vector<int> constraint, int &total_cycle, map<int, int> asap, map<int, int> alap)
 {
     map<int, int> schedule; // maps node index to cycle
 
