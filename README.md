@@ -167,17 +167,17 @@ SW4-SW0 change the display as soon as they move; the switches are read for a loa
 
 ### Checklist for running equations on the board
 
-1. [ ] Write the equations into a file, one per line (for example `input.txt`), with optional `+:N`, `-:N` and `*:N` limits after them.
-2. [ ] On Linux, run `make`, then `./main input.txt --verilog asap` (or alap, fds, casap, calap).
-3. [ ] Note from the end of its output:
+1. Write the equations into input file with optional `+:N`, `-:N` and `*:N` limits.
+2. On Linux, run `make`, then `./main input.txt --verilog asap` (or alap, fds, casap, calap).
+3. Note from the end of its output:
    - `SW[4:0] unit:`, the SW4-SW0 number of each unit, for example `0=add0 1=sub0 2=mul0`
    - `SW[9:6] input:`, the SW9-SW6 number of each input, for example `0=A0 1=B0`
    - the expected outputs, one line per operation, for example `cycle 1, unit 1: Z0 = 02`
-4. [ ] Compile, convert, copy and flash with the commands above.
-5. [ ] Put every switch down and press KEY4. HEX3-HEX2 show 00.
-6. [ ] Optional: for each input to change, set SW9-SW6 to its number and SW5-SW0 to its value, then press KEY1. Work out the new expected outputs by hand.
-7. [ ] For each expected output of the current cycle, set SW4-SW0 to its unit number and check HEX1-HEX0.
-8. [ ] Press KEY0 and repeat step 7 for the next cycle. One press after the last expected cycle ends the run, and every unit then shows 00.
+4. Compile, convert, copy, and flash with the commands above.
+5. Put every switch down and press KEY4. HEX3-HEX2 show 00.
+6. Optional: for each input to change, set SW9-SW6 to its number and SW5-SW0 to its value, then press KEY1. Work out the new expected outputs by hand.
+7. For each expected output of the current cycle, set SW4-SW0 to its unit number and check HEX1-HEX0.
+8. Press KEY0 and repeat step 7 for the next cycle. One press after the last expected cycle ends the run, and every unit then shows 00.
 
 Steps 5-8 for the example under Input format with the hardcoded inputs (A = 2, B = 3):
 
