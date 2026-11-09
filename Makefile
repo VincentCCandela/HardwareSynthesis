@@ -1,5 +1,6 @@
 CC = g++
 CFLAGS = -Wall -Wextra -O2
+CXXFLAGS = -std=c++23
 
 TARGET = main
 

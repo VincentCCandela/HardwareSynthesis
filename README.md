@@ -104,3 +104,60 @@ The program prints:
 - Register list with register input, output, and time enabled information
 - Multiplexer list for each hardware unit with mux input names and the time each input is selected 
 - Sequencer events grouped by cycle, specifically at each cycle how each reg and mux are configured
+
+## Tasks 5-8: Verilog and the Terasic C5G
+
+```text
+├── verilog.h/.cpp # Verilog generator for one schedule
+├── hdl/fu.v       # 8-bit adder, subtractor and multiplier
+├── hdl/top.v      # C5G top level: buttons, switches, 7-segment display
+├── quartus/       # Quartus Prime project for the C5G (5CGXFC5C6F27C7)
+└── generated/     # generator output for the example under Input format (asap)
+```
+
+`make` compiles as C++23; the code only uses C++17 features.
+
+```bash
+./main input.txt --verilog asap   # or alap, fds, casap, calap
+```
+
+This writes `generated/hls_core.v`, the synthesized design: a control-step counter (the sequencer), one operand multiplexer per functional unit, the task-4 registers, and exactly the adders, subtractors and multipliers the schedule uses. It also writes `generated/testbench.v`, which checks every operation's result on its unit in its cycle, and prints the unit numbers and the expected unit outputs for the hardcoded inputs.
+
+The datapath is 8 bits: one value fits on SW[7:0] and two hex digits show it, and results wrap modulo 256. Inputs start at hardcoded values (2, 3, 4, ... in order of first use); the first four can be changed from the switches. Each value shows on its unit during the cycle that computes it.
+
+Simulate:
+
+```bash
+iverilog -o tb.vvp generated/testbench.v generated/hls_core.v hdl/fu.v && vvp tb.vvp
+```
+
+Program the board: open `quartus/hls.qpf` in Quartus Prime Lite, compile, and download `output_files/hls.sof` with the Programmer (RUN/PROG switch on RUN). From `quartus/` on the command line: `quartus_sh --flow compile hls`, then `quartus_pgm -m jtag -o "p;output_files/hls.sof"`.
+
+| Control | Function |
+|---|---|
+| KEY[0] | step one control step |
+| KEY[1] | load SW[7:0] into input SW[9:8] |
+| SW[4:0] | functional unit shown on HEX1-HEX0 |
+| CPU_RESET_n | back to cycle 0 with the hardcoded inputs |
+| HEX3-HEX2 | current cycle |
+| HEX1-HEX0 | output of the selected unit (hex) |
+
+## 30-minute demo plan
+
+| Time | Plan |
+|---|---|
+| 0-5 | Repository layout and pipeline: parse, SSA, DAG, schedules, datapath, Verilog |
+| 5-10 | Example under Input format: `./main input.txt --export-ssa`, then `./main input.txt --verilog asap`; walk through `generated/hls_core.v` and run the testbench |
+| 10-13 | Board with the example: step with KEY[0], switch units with SW[4:0], compare with the printed values |
+| 13-28 | Three runs with the professor's equations, 5 minutes each |
+| 28-30 | Questions |
+
+Each run:
+
+1. The professor writes the equations (and optional `+:N -:N *:N` limits) into a file and picks a schedule.
+2. `./main file --verilog <schedule>` prints the schedules and the expected unit outputs and writes the Verilog; run the testbench.
+3. Compile and program in Quartus (about 2-3 minutes) while explaining `generated/hls_core.v`.
+4. Optionally load other inputs (SW[9:8], SW[7:0], KEY[1]) and work out their results by hand.
+5. Step through the cycles with KEY[0] and check each unit's output on HEX1-HEX0.
+
+Before the demo: run `make`, compile the example once in Quartus, and confirm the Programmer finds the board.

@@ -1,3 +1,5 @@
 main
 *.txt
 *.o
+*.vvp
+quartus/*/

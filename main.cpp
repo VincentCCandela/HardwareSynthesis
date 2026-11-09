@@ -2,6 +2,7 @@
 #include <cstring>
 #include "schedule.h"
 #include "datapath.h"
+#include "verilog.h"
 using namespace std;
 int main(int argc, char *argv[])
 {
@@ -14,6 +15,7 @@ int main(int argc, char *argv[])
     vector<string> ops = {"+", "-", "*"};
 
     bool write_ssa = (argc == 3) && (strcmp(argv[2], "--export-ssa") == 0);
+    string verilog = (argc == 4 && strcmp(argv[2], "--verilog") == 0) ? argv[3] : "";
     string filename = argv[1];
     vector<int> constraint(3, 1);
 
@@ -135,6 +137,17 @@ int main(int argc, char *argv[])
         }
         active_reg.clear();
         active_mux.clear();
+    }
+
+    // tasks 5-8: Verilog for the schedule named after --verilog
+    map<string, map<int, int>> schedules = {{"asap", asap}, {"alap", alap}, {"fds", fds}, {"casap", constrained_asap}, {"calap", constrained_alap}};
+    if (schedules.count(verilog))
+    {
+        write_verilog(dag, schedules[verilog], registers(adj_mat, schedules[verilog]), verilog);
+    }
+    else if (!verilog.empty())
+    {
+        cout << "unknown schedule " << verilog << " (asap, alap, fds, casap or calap)" << endl;
     }
     return 0;
 }
