@@ -212,6 +212,4 @@ The same example with A = 7 and B = 4 loaded in step 6 (only the listed switches
 | 13-28 | Three runs with the professor's equations, 5 minutes each |
 | 28-30 | Questions |
 
-Each run: the professor writes the equations and picks a schedule, then go through the checklist above, explaining `generated/hls_core.v` while Quartus compiles (about 2-3 minutes).
-
-Before the demo: run `make`, compile the example once in Quartus, and confirm `openFPGALoader -b c5g --detect` finds the board.
+Each run: the professor writes the equations and picks a schedule type, and the code is run on the board.
