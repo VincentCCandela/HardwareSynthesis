@@ -179,6 +179,15 @@ SW4-SW0 change the display as soon as they move; the switches are read for a loa
 7. For each expected output of the current cycle, set SW4-SW0 to its unit number and check HEX1-HEX0.
 8. Press KEY0 and repeat step 7 for the next cycle. One press after the last expected cycle ends the run, and every unit then shows 00.
 
+# Runtime steps
+
+1. Set SW9–SW6 to the input number and SW5–SW0 to the value. The display will show some other unit, or 00, while you do this. Ignore it.
+2. Press KEY1. The value is stored.
+3. Repeat for the other inputs.
+4. Now set SW4–SW0 to the unit you want to see. This doesn’t touch the stored inputs.
+5. Step with KEY0.
+6. Reset with KEY4
+
 Steps 5-8 for the example under Input format with the hardcoded inputs (A = 2, B = 3):
 
 | Cycle | Switches up | Unit | HEX1-HEX0 | Operation |
