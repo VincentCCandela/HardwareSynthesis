@@ -123,7 +123,7 @@ The program prints:
 
 This writes `generated/hls_core.v`, the synthesized design: a control-step counter (the sequencer), one operand multiplexer per functional unit, the task-4 registers, and exactly the adders, subtractors and multipliers the schedule uses. It also writes `generated/testbench.v`, which checks every operation's result on its unit in its cycle, and prints the unit numbers and the expected unit outputs for the hardcoded inputs.
 
-The datapath is 8 bits: one value fits on SW[7:0] and two hex digits show it, and results wrap modulo 256. Inputs start at hardcoded values (2, 3, 4, ... in order of first use); the first four can be changed from the switches. Each value shows on its unit during the cycle that computes it.
+The datapath is 8 bits: one value fits on SW7-SW0 and two hex digits show it, and results wrap modulo 256. Inputs start at hardcoded values (2, 3, 4, ... in order of first use); the first four can be changed from the switches. Each value shows on its unit during the cycle that computes it.
 
 Simulate:
 
@@ -148,14 +148,35 @@ openFPGALoader -b c5g hls.rbf
 
 On the machine with Quartus, `quartus_pgm -m jtag -o "p;output_files/hls.sof"` from `quartus/` flashes it instead.
 
+### Board controls
+
+Each switch is 0 when down (toward the edge of the board) and 1 when up. A group of switches is read as a binary number with SW0 as the ones place: SW0 = 1, SW1 = 2, SW2 = 4, SW3 = 8, SW4 = 16, SW5 = 32, SW6 = 64, SW7 = 128. `./main` writes these groups as SW[4:0], SW[7:0] and SW[9:8].
+
 | Control | Function |
 |---|---|
-| KEY[0] | step one control step |
-| KEY[1] | load SW[7:0] into input SW[9:8] |
-| SW[4:0] | functional unit shown on HEX1-HEX0 |
+| KEY0 | go to the next cycle |
+| KEY1 | load the number on SW7-SW0 into the input numbered by SW9-SW8 |
 | KEY4 (CPU_RESET_n) | back to cycle 0 with the hardcoded inputs |
+| SW4-SW0 | number of the unit shown on HEX1-HEX0 |
 | HEX3-HEX2 | current cycle |
-| HEX1-HEX0 | output of the selected unit (hex) |
+| HEX1-HEX0 | output of the selected unit in hex; 00 if it computes nothing this cycle |
+
+Units are numbered adders first, then subtractors, then multipliers, and inputs in order of first use; `./main` prints both lists (`SW[4:0] unit:` and `SW[9:8] input:`). In the example under Input format, unit 0 is the adder (SW4-SW0 all down), 1 the subtractor (only SW0 up) and 2 the multiplier (only SW1 up); input 0 is A (SW9 and SW8 down) and 1 is B (only SW8 up).
+
+SW4-SW0 change the display as soon as they move; the switches are read for a load only when KEY1 is pressed. Because SW4-SW0 are part of both, the display can show another unit, or 00, while a value is set. Load inputs after KEY4 and before the first KEY0, since KEY4 restores the hardcoded inputs.
+
+Example with A = 7 and B = 4 (only the listed switches are up):
+
+| Step | Switches up | Press | Display | Meaning |
+|---|---|---|---|---|
+| 1 | none | KEY4 | 0005 | A = 2, B = 3 |
+| 2 | SW2, SW1, SW0 | KEY1 | 0000 | A = 4 + 2 + 1 = 7 |
+| 3 | SW8, SW2 | KEY1 | 0000 | B = 4 |
+| 4 | none | | 000b | adder, cycle 0: X = 7 + 4 = 11 |
+| 5 | none | KEY0 | 0112 | adder, cycle 1: Y = 11 + 7 = 18 |
+| 6 | SW0 | | 0107 | subtractor, cycle 1: Z = 11 - 4 = 7 |
+| 7 | SW1 | KEY0 | 021C | multiplier, cycle 2: Q = 4 * 7 = 28 |
+| 8 | none | KEY0 | 0300 | done |
 
 ## 30-minute demo plan
 
@@ -163,7 +184,7 @@ On the machine with Quartus, `quartus_pgm -m jtag -o "p;output_files/hls.sof"` f
 |---|---|
 | 0-5 | Repository layout and pipeline: parse, SSA, DAG, schedules, datapath, Verilog |
 | 5-10 | Example under Input format: `./main input.txt --export-ssa`, then `./main input.txt --verilog asap`; walk through `generated/hls_core.v` and run the testbench |
-| 10-13 | Board with the example: step with KEY[0], switch units with SW[4:0], compare with the printed values |
+| 10-13 | Board with the example: step with KEY0, pick units with SW4-SW0, compare with the printed values |
 | 13-28 | Three runs with the professor's equations, 5 minutes each |
 | 28-30 | Questions |
 
@@ -172,7 +193,7 @@ Each run:
 1. The professor writes the equations (and optional `+:N -:N *:N` limits) into a file and picks a schedule.
 2. `./main file --verilog <schedule>` prints the schedules and the expected unit outputs and writes the Verilog; run the testbench.
 3. Compile with Quartus and flash with openFPGALoader (about 2-3 minutes) while explaining `generated/hls_core.v`.
-4. Optionally load other inputs (SW[9:8], SW[7:0], KEY[1]) and work out their results by hand.
-5. Step through the cycles with KEY[0] and check each unit's output on HEX1-HEX0.
+4. Optionally load other inputs (see Board controls) and work out their results by hand.
+5. Step through the cycles with KEY0 and check each unit's output on HEX1-HEX0.
 
 Before the demo: run `make`, compile the example once in Quartus, and confirm `openFPGALoader -b c5g --detect` finds the board.
