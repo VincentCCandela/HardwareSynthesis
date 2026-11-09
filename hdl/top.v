@@ -1,5 +1,5 @@
 // Terasic C5G top level
-//   KEY[0] step one control step         KEY[1] load SW[7:0] into input SW[9:8]
+//   KEY[0] step one control step         KEY[1] load SW[5:0] into input SW[9:6]
 //   SW[4:0] unit shown on HEX1-HEX0      CPU_RESET_n restart with the hardcoded inputs
 //   HEX3-HEX2 control step, HEX1-HEX0 unit output (hex)
 module top (
@@ -24,7 +24,7 @@ module top (
     wire [4:0] cyc;
     wire [7:0] fu_out;
     hls_core core (.clk(CLOCK_50_B5B), .rst(rst), .step(t == 1 && k0 == 2'b01), .ld(t == 1 && k1 == 2'b01),
-                   .ld_sel(SW[9:8]), .ld_val(SW[7:0]), .fu_sel(SW[4:0]), .cyc(cyc), .fu_out(fu_out));
+                   .ld_sel(SW[9:6]), .ld_val({2'b00, SW[5:0]}), .fu_sel(SW[4:0]), .cyc(cyc), .fu_out(fu_out));
 
     // hex digit -> segments, active low, bit 0 = segment a
     function [6:0] seg(input [3:0] h);

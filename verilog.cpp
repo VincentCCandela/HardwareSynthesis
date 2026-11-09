@@ -82,7 +82,7 @@ void write_verilog(vector<struct node> dag, map<int, int> schedule, vector<struc
                 o.expr = "in" + to_string(o.input);
             }
         }
-    vector<int> defaults; // hardcoded input values 2, 3, 4, ...; inputs 0-3 can be loaded from the switches
+    vector<int> defaults; // hardcoded input values 2, 3, 4, ...; inputs 0-15 can be loaded from the switches
     for (size_t k = 0; k < inputs.size(); k++)
         defaults.push_back((k + 2) % 256);
     auto evaluate = [&](vector<int> in)
@@ -109,8 +109,8 @@ void write_verilog(vector<struct node> dag, map<int, int> schedule, vector<struc
     v << "\nmodule hls_core (\n"
          "    input clk, rst,\n"
          "    input step,           // advance one control step\n"
-         "    input ld,             // load ld_val into input ld_sel (inputs 0-3)\n"
-         "    input [1:0] ld_sel,\n"
+         "    input ld,             // load ld_val into input ld_sel (inputs 0-15)\n"
+         "    input [3:0] ld_sel,\n"
          "    input [7:0] ld_val,\n"
          "    input [4:0] fu_sel,   // functional unit shown on fu_out\n"
          "    output reg [4:0] cyc, // control step, "
@@ -152,7 +152,7 @@ void write_verilog(vector<struct node> dag, map<int, int> schedule, vector<struc
     if (!inputs.empty())
     {
         v << "            if (ld)\n                case (ld_sel)\n";
-        for (size_t k = 0; k < inputs.size() && k < 4; k++)
+        for (size_t k = 0; k < inputs.size() && k < 16; k++)
             v << "                    " << k << ": in" << k << " <= ld_val;\n";
         v << "                endcase\n";
     }
@@ -185,7 +185,7 @@ void write_verilog(vector<struct node> dag, map<int, int> schedule, vector<struc
     t << "`timescale 1ns/1ps\n"
          "module testbench;\n"
          "    reg clk = 0, rst = 1, step = 0, ld = 0;\n"
-         "    reg [1:0] ld_sel = 0;\n"
+         "    reg [3:0] ld_sel = 0;\n"
          "    reg [7:0] ld_val = 0;\n"
          "    reg [4:0] fu_sel = 0;\n"
          "    wire [4:0] cyc;\n"
@@ -203,7 +203,7 @@ void write_verilog(vector<struct node> dag, map<int, int> schedule, vector<struc
          "            end\n"
          "        end\n"
          "    endtask\n\n"
-         "    task load(input [1:0] slot, input [7:0] value);\n"
+         "    task load(input [3:0] slot, input [7:0] value);\n"
          "        begin\n"
          "            ld = 1; ld_sel = slot; ld_val = value;\n"
          "            @(posedge clk) #1 ld = 0;\n"
@@ -220,13 +220,13 @@ void write_verilog(vector<struct node> dag, map<int, int> schedule, vector<struc
     for (int run = 0; run < 3; run++)
     {
         vector<int> in = defaults;
-        for (size_t k = 0; run > 0 && k < in.size() && k < 4; k++)
-            in[k] = rng() % 256;
+        for (size_t k = 0; run > 0 && k < in.size() && k < 16; k++)
+            in[k] = rng() % 64;
         t << "        // inputs:";
         for (size_t k = 0; k < inputs.size(); k++)
             t << " " << inputs[k] << "=" << in[k];
         t << "\n        rst = 1;\n        @(posedge clk) #1 rst = 0;\n";
-        for (size_t k = 0; run > 0 && k < in.size() && k < 4; k++)
+        for (size_t k = 0; run > 0 && k < in.size() && k < 16; k++)
             t << "        load(" << k << ", " << in[k] << ");\n";
         vector<int> value = evaluate(in);
         for (int c = 0; c < cycles; c++)
@@ -245,8 +245,8 @@ void write_verilog(vector<struct node> dag, map<int, int> schedule, vector<struc
     cout << endl << "wrote generated/hls_core.v and generated/testbench.v (" << name << " schedule)" << endl << "SW[4:0] unit:";
     for (size_t u = 0; u < units.size(); u++)
         cout << " " << u << "=" << units[u];
-    cout << endl << "SW[9:8] input:";
-    for (size_t k = 0; k < inputs.size() && k < 4; k++)
+    cout << endl << "SW[9:6] input:";
+    for (size_t k = 0; k < inputs.size() && k < 16; k++)
         cout << " " << k << "=" << inputs[k];
     cout << endl << "expected unit outputs (hex) for";
     for (size_t k = 0; k < inputs.size(); k++)

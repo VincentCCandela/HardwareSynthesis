@@ -1,7 +1,7 @@
 `timescale 1ns/1ps
 module testbench;
     reg clk = 0, rst = 1, step = 0, ld = 0;
-    reg [1:0] ld_sel = 0;
+    reg [3:0] ld_sel = 0;
     reg [7:0] ld_val = 0;
     reg [4:0] fu_sel = 0;
     wire [4:0] cyc;
@@ -21,7 +21,7 @@ module testbench;
         end
     endtask
 
-    task load(input [1:0] slot, input [7:0] value);
+    task load(input [3:0] slot, input [7:0] value);
         begin
             ld = 1; ld_sel = slot; ld_val = value;
             @(posedge clk) #1 ld = 0;
@@ -46,27 +46,27 @@ module testbench;
         do_step;
         check(2, 6); // cycle 2: Q0
         do_step;
-        // inputs: A0=37 B0=235
+        // inputs: A0=37 B0=43
         rst = 1;
         @(posedge clk) #1 rst = 0;
         load(0, 37);
-        load(1, 235);
-        check(0, 16); // cycle 0: X0
+        load(1, 43);
+        check(0, 80); // cycle 0: X0
         do_step;
-        check(0, 53); // cycle 1: Y0
+        check(0, 117); // cycle 1: Y0
         check(1, 37); // cycle 1: Z0
         do_step;
-        check(2, 247); // cycle 2: Q0
+        check(2, 55); // cycle 2: Q0
         do_step;
-        // inputs: A0=140 B0=72
+        // inputs: A0=12 B0=8
         rst = 1;
         @(posedge clk) #1 rst = 0;
-        load(0, 140);
-        load(1, 72);
-        check(0, 212); // cycle 0: X0
+        load(0, 12);
+        load(1, 8);
+        check(0, 20); // cycle 0: X0
         do_step;
-        check(0, 96); // cycle 1: Y0
-        check(1, 140); // cycle 1: Z0
+        check(0, 32); // cycle 1: Y0
+        check(1, 12); // cycle 1: Z0
         do_step;
         check(2, 96); // cycle 2: Q0
         do_step;

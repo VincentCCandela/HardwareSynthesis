@@ -123,7 +123,7 @@ The program prints:
 
 This writes `generated/hls_core.v`, the synthesized design: a control-step counter (the sequencer), one operand multiplexer per functional unit, the task-4 registers, and exactly the adders, subtractors and multipliers the schedule uses. It also writes `generated/testbench.v`, which checks every operation's result on its unit in its cycle, and prints the unit numbers and the expected unit outputs for the hardcoded inputs.
 
-The datapath is 8 bits: one value fits on SW7-SW0 and two hex digits show it, and results wrap modulo 256. Inputs start at hardcoded values (2, 3, 4, ... in order of first use); the first four can be changed from the switches. Each value shows on its unit during the cycle that computes it.
+The datapath is 8 bits: two hex digits show a value, and results wrap modulo 256. Inputs start at hardcoded values (2, 3, 4, ... in order of first use); the first sixteen can be changed from the switches with 6-bit values (0-63), which leaves four switches to pick the input. Each value shows on its unit during the cycle that computes it.
 
 Simulate:
 
@@ -150,18 +150,18 @@ On the machine with Quartus, `quartus_pgm -m jtag -o "p;output_files/hls.sof"` f
 
 ### Board controls
 
-Each switch is 0 when down (toward the edge of the board) and 1 when up. A group of switches is read as a binary number with SW0 as the ones place: SW0 = 1, SW1 = 2, SW2 = 4, SW3 = 8, SW4 = 16, SW5 = 32, SW6 = 64, SW7 = 128. `./main` writes these groups as SW[4:0], SW[7:0] and SW[9:8].
+Each switch is 0 when down (toward the edge of the board) and 1 when up. A group of switches is read as a binary number with its lowest switch as the ones place: in SW5-SW0, SW0 = 1, SW1 = 2, SW2 = 4, SW3 = 8, SW4 = 16, SW5 = 32; in SW9-SW6, SW6 = 1, SW7 = 2, SW8 = 4, SW9 = 8. `./main` writes these groups as SW[4:0], SW[5:0] and SW[9:6].
 
 | Control | Function |
 |---|---|
 | KEY0 | go to the next cycle |
-| KEY1 | load the number on SW7-SW0 into the input numbered by SW9-SW8 |
+| KEY1 | load the number on SW5-SW0 (0-63) into the input numbered by SW9-SW6 |
 | KEY4 (CPU_RESET_n) | back to cycle 0 with the hardcoded inputs |
 | SW4-SW0 | number of the unit shown on HEX1-HEX0 |
 | HEX3-HEX2 | current cycle |
 | HEX1-HEX0 | output of the selected unit in hex; 00 if it computes nothing this cycle |
 
-Units are numbered adders first, then subtractors, then multipliers, and inputs in order of first use; `./main` prints both lists (`SW[4:0] unit:` and `SW[9:8] input:`). In the example under Input format, unit 0 is the adder (SW4-SW0 all down), 1 the subtractor (only SW0 up) and 2 the multiplier (only SW1 up); input 0 is A (SW9 and SW8 down) and 1 is B (only SW8 up).
+Units are numbered adders first, then subtractors, then multipliers, and inputs in order of first use; `./main` prints both lists (`SW[4:0] unit:` and `SW[9:6] input:`). In the example under Input format, unit 0 is the adder (SW4-SW0 all down), 1 the subtractor (only SW0 up) and 2 the multiplier (only SW1 up); input 0 is A (SW9-SW6 all down) and 1 is B (only SW6 up).
 
 SW4-SW0 change the display as soon as they move; the switches are read for a load only when KEY1 is pressed. Because SW4-SW0 are part of both, the display can show another unit, or 00, while a value is set. Load inputs after KEY4 and before the first KEY0, since KEY4 restores the hardcoded inputs.
 
@@ -171,7 +171,7 @@ Example with A = 7 and B = 4 (only the listed switches are up):
 |---|---|---|---|---|
 | 1 | none | KEY4 | 0005 | A = 2, B = 3 |
 | 2 | SW2, SW1, SW0 | KEY1 | 0000 | A = 4 + 2 + 1 = 7 |
-| 3 | SW8, SW2 | KEY1 | 0000 | B = 4 |
+| 3 | SW6, SW2 | KEY1 | 0000 | B = 4 |
 | 4 | none | | 000b | adder, cycle 0: X = 7 + 4 = 11 |
 | 5 | none | KEY0 | 0112 | adder, cycle 1: Y = 11 + 7 = 18 |
 | 6 | SW0 | | 0107 | subtractor, cycle 1: Z = 11 - 4 = 7 |

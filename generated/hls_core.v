@@ -3,8 +3,8 @@
 module hls_core (
     input clk, rst,
     input step,           // advance one control step
-    input ld,             // load ld_val into input ld_sel (inputs 0-3)
-    input [1:0] ld_sel,
+    input ld,             // load ld_val into input ld_sel (inputs 0-15)
+    input [3:0] ld_sel,
     input [7:0] ld_val,
     input [4:0] fu_sel,   // functional unit shown on fu_out
     output reg [4:0] cyc, // control step, 3 = done
