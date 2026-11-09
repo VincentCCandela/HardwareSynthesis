@@ -6,6 +6,7 @@ set_global_assignment -name VERILOG_FILE ../hdl/top.v
 set_global_assignment -name VERILOG_FILE ../hdl/fu.v
 set_global_assignment -name VERILOG_FILE ../generated/hls_core.v
 set_global_assignment -name SDC_FILE hls.sdc
+set_global_assignment -name PROJECT_OUTPUT_DIRECTORY output_files
 set_location_assignment PIN_R20 -to CLOCK_50_B5B
 set_instance_assignment -name IO_STANDARD "3.3-V LVTTL" -to CLOCK_50_B5B
 set_location_assignment PIN_AB24 -to CPU_RESET_n
