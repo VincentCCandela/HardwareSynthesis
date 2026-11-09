@@ -131,14 +131,29 @@ Simulate:
 iverilog -o tb.vvp generated/testbench.v generated/hls_core.v hdl/fu.v && vvp tb.vvp
 ```
 
-Program the board: open `quartus/hls.qpf` in Quartus Prime Lite, compile, and download `output_files/hls.sof` with the Programmer (RUN/PROG switch on RUN). From `quartus/` on the command line: `quartus_sh --flow compile hls`, then `quartus_pgm -m jtag -o "p;output_files/hls.sof"`.
+Compile with Quartus Prime Lite, which runs on Linux or Windows but not macOS:
+
+```bash
+cd quartus
+quartus_sh --flow compile hls
+quartus_cpf --option=bitstream_compression=off -c output_files/hls.sof output_files/hls.rbf
+```
+
+Flash from a Mac with [openFPGALoader](https://github.com/trabucayre/openFPGALoader) (`brew install openfpgaloader`), with the board's USB cable plugged into the Mac, the power on and the RUN/PROG switch on RUN:
+
+```bash
+scp <user>@<linux-host>:HardwareSynthesis/quartus/output_files/hls.rbf .
+openFPGALoader -b c5g hls.rbf
+```
+
+On the machine with Quartus, `quartus_pgm -m jtag -o "p;output_files/hls.sof"` from `quartus/` flashes it instead.
 
 | Control | Function |
 |---|---|
 | KEY[0] | step one control step |
 | KEY[1] | load SW[7:0] into input SW[9:8] |
 | SW[4:0] | functional unit shown on HEX1-HEX0 |
-| CPU_RESET_n | back to cycle 0 with the hardcoded inputs |
+| KEY4 (CPU_RESET_n) | back to cycle 0 with the hardcoded inputs |
 | HEX3-HEX2 | current cycle |
 | HEX1-HEX0 | output of the selected unit (hex) |
 
@@ -156,8 +171,8 @@ Each run:
 
 1. The professor writes the equations (and optional `+:N -:N *:N` limits) into a file and picks a schedule.
 2. `./main file --verilog <schedule>` prints the schedules and the expected unit outputs and writes the Verilog; run the testbench.
-3. Compile and program in Quartus (about 2-3 minutes) while explaining `generated/hls_core.v`.
+3. Compile with Quartus and flash with openFPGALoader (about 2-3 minutes) while explaining `generated/hls_core.v`.
 4. Optionally load other inputs (SW[9:8], SW[7:0], KEY[1]) and work out their results by hand.
 5. Step through the cycles with KEY[0] and check each unit's output on HEX1-HEX0.
 
-Before the demo: run `make`, compile the example once in Quartus, and confirm the Programmer finds the board.
+Before the demo: run `make`, compile the example once in Quartus, and confirm `openFPGALoader -b c5g --detect` finds the board.
