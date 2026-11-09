@@ -165,7 +165,31 @@ Units are numbered adders first, then subtractors, then multipliers, and inputs 
 
 SW4-SW0 change the display as soon as they move; the switches are read for a load only when KEY1 is pressed. Because SW4-SW0 are part of both, the display can show another unit, or 00, while a value is set. Load inputs after KEY4 and before the first KEY0, since KEY4 restores the hardcoded inputs.
 
-Example with A = 7 and B = 4 (only the listed switches are up):
+### Checklist for running equations on the board
+
+1. [ ] Write the equations into a file, one per line (for example `input.txt`), with optional `+:N`, `-:N` and `*:N` limits after them.
+2. [ ] On Linux, run `make`, then `./main input.txt --verilog asap` (or alap, fds, casap, calap).
+3. [ ] Note from the end of its output:
+   - `SW[4:0] unit:`, the SW4-SW0 number of each unit, for example `0=add0 1=sub0 2=mul0`
+   - `SW[9:6] input:`, the SW9-SW6 number of each input, for example `0=A0 1=B0`
+   - the expected outputs, one line per operation, for example `cycle 1, unit 1: Z0 = 02`
+4. [ ] Compile, convert, copy and flash with the commands above.
+5. [ ] Put every switch down and press KEY4. HEX3-HEX2 show 00.
+6. [ ] Optional: for each input to change, set SW9-SW6 to its number and SW5-SW0 to its value, then press KEY1. Work out the new expected outputs by hand.
+7. [ ] For each expected output of the current cycle, set SW4-SW0 to its unit number and check HEX1-HEX0.
+8. [ ] Press KEY0 and repeat step 7 for the next cycle. One press after the last expected cycle ends the run, and every unit then shows 00.
+
+Steps 5-8 for the example under Input format with the hardcoded inputs (A = 2, B = 3):
+
+| Cycle | Switches up | Unit | HEX1-HEX0 | Operation |
+|---|---|---|---|---|
+| 00 | none | adder | 05 | X = A + B = 2 + 3 |
+| 01 (press KEY0) | none | adder | 07 | Y = X + A = 5 + 2 |
+| 01 | SW0 | subtractor | 02 | Z = X - B = 5 - 3 |
+| 02 (press KEY0) | SW1 | multiplier | 06 | Q = B * Z = 3 * 2 |
+| 03 (press KEY0) | none | | 00 | done |
+
+The same example with A = 7 and B = 4 loaded in step 6 (only the listed switches are up):
 
 | Step | Switches up | Press | Display | Meaning |
 |---|---|---|---|---|
@@ -188,12 +212,6 @@ Example with A = 7 and B = 4 (only the listed switches are up):
 | 13-28 | Three runs with the professor's equations, 5 minutes each |
 | 28-30 | Questions |
 
-Each run:
-
-1. The professor writes the equations (and optional `+:N -:N *:N` limits) into a file and picks a schedule.
-2. `./main file --verilog <schedule>` prints the schedules and the expected unit outputs and writes the Verilog; run the testbench.
-3. Compile with Quartus and flash with openFPGALoader (about 2-3 minutes) while explaining `generated/hls_core.v`.
-4. Optionally load other inputs (see Board controls) and work out their results by hand.
-5. Step through the cycles with KEY0 and check each unit's output on HEX1-HEX0.
+Each run: the professor writes the equations and picks a schedule, then go through the checklist above, explaining `generated/hls_core.v` while Quartus compiles (about 2-3 minutes).
 
 Before the demo: run `make`, compile the example once in Quartus, and confirm `openFPGALoader -b c5g --detect` finds the board.
